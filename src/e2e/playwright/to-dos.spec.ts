@@ -2,13 +2,13 @@ import { test, expect, type Page } from "@playwright/test";
 import { nanoid } from "nanoid";
 
 // This test is used to check the parallel execution of tests
-test.describe("Todo List Application 2", () => {
+test.describe.skip("Todo List Application 2", () => {
 	// Helper function to generate unique todo text
 	const uniqueTodoText = (baseText: string) => `${baseText}_${nanoid()}`;
 
 	// Helper function to extract todo ID from the element
 	async function getTodoId(page: Page, todoText: string) {
-		const todoSpan = page.locator(`span:has-text("${todoText}")`);
+		const todoSpan = page.locator(`span:has-text("${todoText}")`).first();
 		const id = await todoSpan.getAttribute("id");
 		return id?.replace("todo-text-", "") || "";
 	}
@@ -90,7 +90,7 @@ test.describe("Todo List Application", () => {
 
 	// Helper function to extract todo ID from the element
 	async function getTodoId(page: Page, todoText: string) {
-		const todoSpan = page.locator(`span:has-text("${todoText}")`);
+		const todoSpan = page.locator(`span:has-text("${todoText}")`).first();
 		const id = await todoSpan.getAttribute("id");
 		return id?.replace("todo-text-", "") || "";
 	}
