@@ -10,6 +10,7 @@
     "format": "biome format . --write",
     "check": "biome check --apply .",
     "test-selenium": "bun test src/e2e/selenium",
+    "test-playwright": "bunx playwright test"
   },
   "dependencies": {
     "next": "^15.0.4-canary.45",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@playwright/test": "^1.49.1",
     "@types/bun": "latest",
     "@types/mocha": "^10.0.10",
     "@types/node": "^20",
