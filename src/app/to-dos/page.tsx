@@ -28,6 +28,7 @@ export default async function TodosPage() {
 						<form action={addTodo} className="mb-10">
 							<div className="flex gap-4">
 								<input
+									id="todo-input"
 									type="text"
 									name="text"
 									placeholder="Add a new todo..."
@@ -36,6 +37,7 @@ export default async function TodosPage() {
 								/>
 								<button
 									type="submit"
+									id="add-todo-button"
 									className="px-8 py-4 text-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium shadow-md whitespace-nowrap"
 								>
 									Add
@@ -43,16 +45,18 @@ export default async function TodosPage() {
 							</div>
 						</form>
 
-						<ul className="space-y-5">
+						<ul id="todo-list" className="space-y-5">
 							{todos.map((todo) => (
 								<li
 									key={todo.id}
+									id={`todo-item-${todo.id}`}
 									className="flex items-center gap-4 p-5 bg-gray-50 rounded-lg shadow-sm hover:shadow transition-all duration-200"
 								>
 									<form action={toggleTodo} className="flex-1 flex items-center gap-4">
 										<input type="hidden" name="id" value={todo.id} />
 										<button
 											type="submit"
+											id={`toggle-todo-${todo.id}`}
 											className="h-6 w-6 rounded border border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
 										>
 											{todo.completed && (
@@ -73,6 +77,7 @@ export default async function TodosPage() {
 											)}
 										</button>
 										<span
+											id={`todo-text-${todo.id}`}
 											className={`flex-1 text-lg text-gray-700 ${todo.completed ? "line-through text-gray-400" : ""}`}
 										>
 											{todo.text}
@@ -82,6 +87,7 @@ export default async function TodosPage() {
 										<input type="hidden" name="id" value={todo.id} />
 										<button
 											type="submit"
+											id={`delete-todo-${todo.id}`}
 											className="px-4 py-2 text-sm text-red-500 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200"
 										>
 											Delete
@@ -91,7 +97,9 @@ export default async function TodosPage() {
 							))}
 						</ul>
 						{todos.length === 0 && (
-							<p className="text-center text-gray-500 mt-12 text-lg">No todos yet. Add one above!</p>
+							<p id="empty-message" className="text-center text-gray-500 mt-12 text-lg">
+								No todos yet. Add one above!
+							</p>
 						)}
 					</div>
 				</div>

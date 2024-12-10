@@ -2,7 +2,8 @@ import { Builder, Browser, type WebDriver, By, until } from "selenium-webdriver"
 import assert from "node:assert";
 import { describe, it, beforeAll, afterAll } from "bun:test";
 
-describe("Todo App E2E Tests", () => {
+// This is to check if the tests can be run in parallel
+describe("Todo App E2E Test 3", () => {
 	let driver: WebDriver;
 
 	beforeAll(async () => {
