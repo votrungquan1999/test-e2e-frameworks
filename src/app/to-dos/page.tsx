@@ -24,6 +24,14 @@ export default async function TodosPage() {
 						Todo List
 					</h1>
 
+					<div className="relative flex flex-col items-center justify-center h-10">
+						<a href="/" className="bg-blue-500 text-white px-4 py-2 rounded-md" id="covered-button">
+							click me
+						</a>
+
+						<div className="absolute inset-0 bg-black h-10 w-full" id="covered-button-overlay" />
+					</div>
+
 					<div className="max-w-3xl mx-auto">
 						<form action={addTodo} className="mb-10">
 							<div className="flex gap-4">
@@ -111,8 +119,12 @@ export default async function TodosPage() {
 async function addTodo(formData: FormData) {
 	"use server";
 	const text = formData.get("text");
-	if (typeof text !== "string" || !text) return;
-	await addTodoAction(text);
+	if (typeof text !== "string") return;
+
+	const trimmedText = text.trim();
+	if (trimmedText === "") return;
+
+	await addTodoAction(trimmedText);
 
 	revalidateTag("todos");
 }
