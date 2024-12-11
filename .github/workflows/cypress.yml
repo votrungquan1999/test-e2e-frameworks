@@ -24,10 +24,14 @@ jobs:
       - name: Build Next.js app
         run: bun run build
 
-      - name: Cypress run
-        uses: cypress-io/github-action@v6
-        with:
-          start: bun run start
-          wait-on: 'http://localhost:3000'
-          browser: chrome
-          command: bun run test-cypress
+      - name: Start Next.js
+        run: bun run start &
+
+      - name: Wait for Next.js to be ready
+        run: |
+          while ! nc -z localhost 3000; do
+            sleep 1
+          done
+
+      - name: Run Cypress tests
+        run: bun run test-cypress
