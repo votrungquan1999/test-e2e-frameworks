@@ -9,6 +9,7 @@ import {
 } from "./actions";
 import { cacheTag } from "next/dist/server/use-cache/cache-tag";
 import { revalidateTag } from "next/cache";
+import Link from "next/link";
 
 export default async function TodosPage() {
 	cacheLife("minutes");
@@ -25,9 +26,9 @@ export default async function TodosPage() {
 					</h1>
 
 					<div className="relative flex flex-col items-center justify-center h-10">
-						<a href="/" className="bg-blue-500 text-white px-4 py-2 rounded-md" id="covered-button">
+						<Link href="/" className="bg-blue-500 text-white px-4 py-2 rounded-md" id="covered-button">
 							click me
-						</a>
+						</Link>
 
 						<div className="absolute inset-0 bg-black h-10 w-full" id="covered-button-overlay" />
 					</div>
