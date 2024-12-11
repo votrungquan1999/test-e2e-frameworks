@@ -69,16 +69,15 @@ test.describe.skip("Todo List Application 2", () => {
 	});
 
 	test("should not add empty todo", async ({ page }) => {
+		// Get the initial count of todos
+		const initialCount = await page.locator("#todo-list li").count();
+
 		// Try to add an empty todo
 		await page.locator("#todo-input").fill("");
 		await page.locator("#add-todo-button").click();
 
-		// Get the initial count of todos
-		const initialCount = await page.locator("#todo-list li").count();
-
-		// Verify no new todo was added
-		const newCount = await page.locator("#todo-list li").count();
-		expect(newCount).toBe(initialCount);
+		// Verify no new todo was added using proper Playwright expect
+		await expect(page.locator("#todo-list li")).toHaveCount(initialCount);
 	});
 });
 
@@ -189,15 +188,14 @@ test.describe("Todo List Application", () => {
 	});
 
 	test("should not add empty todo", async ({ page }) => {
+		// Get the initial count of todos
+		const initialCount = await page.locator("#todo-list li").count();
+
 		// Try to add an empty todo
 		await page.locator("#todo-input").fill("");
 		await page.locator("#add-todo-button").click();
 
-		// Get the initial count of todos
-		const initialCount = await page.locator("#todo-list li").count();
-
-		// Verify no new todo was added
-		const newCount = await page.locator("#todo-list li").count();
-		expect(newCount).toBe(initialCount);
+		// Verify no new todo was added using proper Playwright expect
+		await expect(page.locator("#todo-list li")).toHaveCount(initialCount);
 	});
 });
