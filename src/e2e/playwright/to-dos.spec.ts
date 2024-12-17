@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { nanoid } from "nanoid";
 
 // This test is used to check the parallel execution of tests
-test.describe.skip("Todo List Application 2", () => {
+test.describe.skip("Parallel Execution test setup", () => {
 	// Helper function to generate unique todo text
 	const uniqueTodoText = (baseText: string) => `${baseText}_${nanoid()}`;
 
@@ -14,188 +14,153 @@ test.describe.skip("Todo List Application 2", () => {
 	}
 
 	test.beforeEach(async ({ page }) => {
-		// Navigate to the todos page before each test
 		await page.goto("/to-dos");
 	});
 
 	test("should display the todo list page", async ({ page }) => {
-		// Check if the title is present
-		await expect(page.locator("h1")).toHaveText("Todo List");
-
-		// Check if the input and add button are present
-		await expect(page.locator("#todo-input")).toBeVisible();
-		await expect(page.locator("#add-todo-button")).toBeVisible();
+		await expect(page.getByRole("heading", { name: "Todo List" })).toBeVisible();
+		await expect(page.getByPlaceholder("Add a new todo...")).toBeVisible();
+		await expect(page.getByRole("button", { name: "Add" })).toBeVisible();
 	});
 
 	test("should add a new todo", async ({ page }) => {
 		const todoText = uniqueTodoText("Buy groceries");
 
-		// Add a new todo
-		await page.locator("#todo-input").fill(todoText);
-		await page.locator("#add-todo-button").click();
+		await page.getByPlaceholder("Add a new todo...").fill(todoText);
+		await page.getByRole("button", { name: "Add" }).click();
 
-		// Get the todo ID
-		const todoId = await getTodoId(page, todoText);
-
-		// Check if the todo was added using specific IDs
-		await expect(page.locator(`#todo-item-${todoId}`)).toBeVisible();
-		await expect(page.locator(`#todo-text-${todoId}`)).toHaveText(todoText);
+		await expect(page.getByText(todoText)).toBeVisible();
 	});
 
 	test("should toggle todo completion status", async ({ page }) => {
-		// Add a new todo first
-		const newTodoText = uniqueTodoText("Test toggle functionality");
-		await page.locator("#todo-input").fill(newTodoText);
-		await page.locator("#add-todo-button").click();
+		const todoText = uniqueTodoText("Test toggle functionality");
 
-		// Get the todo ID
-		const todoId = await getTodoId(page, newTodoText);
+		await page.getByPlaceholder("Add a new todo...").fill(todoText);
+		await page.getByRole("button", { name: "Add" }).click();
 
-		// Get the toggle button and text element by ID
+		const todoId = await getTodoId(page, todoText);
+
 		const toggleButton = page.locator(`#toggle-todo-${todoId}`);
 		const todoTextElement = page.locator(`#todo-text-${todoId}`);
 
-		// Toggle the todo
 		await toggleButton.click();
-
-		// Check if the todo text is struck through (completed)
 		await expect(todoTextElement).toHaveClass(/line-through/);
 
-		// Toggle again
 		await toggleButton.click();
-
-		// Check if the todo text is no longer struck through
 		await expect(todoTextElement).not.toHaveClass(/line-through/);
 	});
 
 	test("should not add empty todo", async ({ page }) => {
-		// Get the initial count of todos
-		const initialCount = await page.locator("#todo-list li").count();
+		const initialCount = await page.getByRole("listitem").count();
 
-		// Try to add an empty todo
-		await page.locator("#todo-input").fill("");
-		await page.locator("#add-todo-button").click();
+		await page.getByPlaceholder("Add a new todo...").fill(" ");
+		await page.getByRole("button", { name: "Add" }).click();
 
-		// Verify no new todo was added using proper Playwright expect
-		await expect(page.locator("#todo-list li")).toHaveCount(initialCount);
+		await expect(page.getByRole("listitem")).toHaveCount(initialCount);
 	});
 });
 
 test.describe("Todo List Application", () => {
 	test.describe.configure({ mode: "serial" });
 
-	// Helper function to generate unique todo text
 	const uniqueTodoText = (baseText: string) => `${baseText}_${nanoid()}`;
 
-	// Helper function to extract todo ID from the element
-	async function getTodoId(page: Page, todoText: string) {
-		const todoSpan = page.locator(`span:has-text("${todoText}")`).first();
-		const id = await todoSpan.getAttribute("id");
-		return id?.replace("todo-text-", "") || "";
-	}
-
 	test.beforeEach(async ({ page }) => {
-		// Navigate to the todos page before each test
 		await page.goto("/to-dos");
 	});
 
 	test("should display the todo list page", async ({ page }) => {
-		// Check if the title is present
-		await expect(page.locator("h1")).toHaveText("Todo List");
-
-		// Check if the input and add button are present
-		await expect(page.locator("#todo-input")).toBeVisible();
-		await expect(page.locator("#add-todo-button")).toBeVisible();
+		await expect(page.getByRole("heading", { name: "Todo List" })).toBeVisible();
+		await expect(page.getByPlaceholder("Add a new todo...")).toBeVisible();
+		await expect(page.getByRole("button", { name: "Add" })).toBeVisible();
 	});
 
 	test("should add a new todo", async ({ page }) => {
 		const todoText = uniqueTodoText("Buy groceries");
 
-		// Add a new todo
-		await page.locator("#todo-input").fill(todoText);
-		await page.locator("#add-todo-button").click();
+		await page.getByPlaceholder("Add a new todo...").fill(todoText);
+		await page.getByRole("button", { name: "Add" }).click();
 
-		// Get the todo ID
-		const todoId = await getTodoId(page, todoText);
-
-		// Check if the todo was added using specific IDs
-		await expect(page.locator(`#todo-item-${todoId}`)).toBeVisible();
-		await expect(page.locator(`#todo-text-${todoId}`)).toHaveText(todoText);
+		await expect(page.getByRole("listitem").filter({ hasText: todoText })).toBeVisible();
 	});
 
 	test("should toggle todo completion status", async ({ page }) => {
-		// Add a new todo first
-		const newTodoText = uniqueTodoText("Test toggle functionality");
-		await page.locator("#todo-input").fill(newTodoText);
-		await page.locator("#add-todo-button").click();
+		const todoText = uniqueTodoText("Test toggle functionality");
 
-		// Get the todo ID
-		const todoId = await getTodoId(page, newTodoText);
+		await page.getByPlaceholder("Add a new todo...").fill(todoText);
+		await page.getByRole("button", { name: "Add" }).click();
 
-		// Get the toggle button and text element by ID
-		const toggleButton = page.locator(`#toggle-todo-${todoId}`);
-		const todoTextElement = page.locator(`#todo-text-${todoId}`);
+		const todoItem = page.getByRole("listitem").filter({ hasText: todoText });
+		const toggleButton = page.getByRole("button", { name: `Toggle todo: ${todoText}` });
+		const todoTextElement = todoItem.getByText(todoText);
 
-		// Toggle the todo
+		// Initial state
+		await expect(toggleButton).toHaveAttribute("aria-pressed", "false");
+
+		// Toggle on
 		await toggleButton.click();
-
-		// Check if the todo text is struck through (completed)
+		await expect(toggleButton).toHaveAttribute("aria-pressed", "true");
 		await expect(todoTextElement).toHaveClass(/line-through/);
 
-		// Toggle again
+		// Toggle off
 		await toggleButton.click();
-
-		// Check if the todo text is no longer struck through
+		await expect(toggleButton).toHaveAttribute("aria-pressed", "false");
 		await expect(todoTextElement).not.toHaveClass(/line-through/);
 	});
 
 	test("should delete a todo", async ({ page }) => {
-		// Add a new todo first
 		const todoText = uniqueTodoText("Delete me");
-		await page.locator("#todo-input").fill(todoText);
-		await page.locator("#add-todo-button").click();
 
-		// Get the todo ID
-		const todoId = await getTodoId(page, todoText);
+		await page.getByPlaceholder("Add a new todo...").fill(todoText);
+		await page.getByRole("button", { name: "Add" }).click();
 
-		// Store the initial count of todos
-		const initialCount = await page.locator("#todo-list li").count();
+		const todoItem = page.getByRole("listitem").filter({ hasText: todoText });
 
-		// Delete the specific todo using its ID
-		await page.locator(`#delete-todo-${todoId}`).click();
+		// Verify todo is added before proceeding
+		await expect(todoItem).toBeVisible();
 
-		// Verify the todo was deleted
-		await expect(page.locator("#todo-list li")).toHaveCount(initialCount - 1);
+		const initialCount = await page.getByRole("listitem").count();
 
-		// Verify the specific todo is no longer present
-		await expect(page.locator(`#todo-item-${todoId}`)).toHaveCount(0);
+		await todoItem.getByRole("button", { name: "Delete", exact: true }).click();
+
+		await expect(page.getByRole("listitem")).toHaveCount(initialCount - 1);
+		await expect(page.getByText(todoText)).not.toBeVisible();
 	});
 
 	test("should show empty message when no todos exist", async ({ page }) => {
-		// Delete all existing todos
-		while ((await page.locator("#todo-list li").count()) > 0) {
-			const firstTodoText = await page.locator("#todo-list li span").first().textContent();
-			const todoId = await getTodoId(page, firstTodoText || "");
-			await page.locator(`#delete-todo-${todoId}`).click();
-
-			// Verify the specific todo is no longer present
-			await expect(page.locator(`#todo-item-${todoId}`)).toHaveCount(0);
+		while ((await page.getByRole("listitem").count()) > 0) {
+			await page.getByRole("button", { name: "Delete" }).first().click();
 		}
 
-		// Check if the empty message is displayed
-		await expect(page.locator("#empty-message")).toBeVisible();
-		await expect(page.locator("#empty-message")).toHaveText("No todos yet. Add one above!");
+		await expect(page.getByText("No todos yet. Add one above!")).toBeVisible();
 	});
 
 	test("should not add empty todo", async ({ page }) => {
-		// Get the initial count of todos
-		const initialCount = await page.locator("#todo-list li").count();
+		const initialCount = await page.getByRole("listitem").count();
 
-		// Try to add an empty todo
-		await page.locator("#todo-input").fill("");
-		await page.locator("#add-todo-button").click();
+		await page.getByPlaceholder("Add a new todo...").fill(" ");
+		await page.getByRole("button", { name: "Add" }).click();
 
-		// Verify no new todo was added using proper Playwright expect
-		await expect(page.locator("#todo-list li")).toHaveCount(initialCount);
+		await expect(page.getByRole("listitem")).toHaveCount(initialCount);
+	});
+
+	test("should handle multiple todos", async ({ page }) => {
+		const todos = [uniqueTodoText("First todo"), uniqueTodoText("Second todo"), uniqueTodoText("Third todo")];
+
+		const initialCount = await page.getByRole("listitem").count();
+
+		for (const todo of todos) {
+			await page.getByPlaceholder("Add a new todo...").fill(todo);
+			await page.getByRole("button", { name: "Add" }).click();
+
+			// Verify each todo is visible after adding
+			await expect(page.getByRole("listitem").filter({ hasText: todo })).toBeVisible();
+		}
+
+		// Verify total count and each todo's text
+		await expect(page.getByRole("listitem")).toHaveCount(initialCount + todos.length);
+		for (const todo of todos) {
+			await expect(page.getByRole("listitem").filter({ hasText: todo })).toBeVisible();
+		}
 	});
 });

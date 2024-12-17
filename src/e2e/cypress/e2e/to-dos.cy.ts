@@ -7,137 +7,110 @@ describe("Todo Application", () => {
 
 	it("should display the todo list page", () => {
 		cy.get("h1").should("contain", "Todo List");
-		cy.get("#todo-input").should("exist");
-		cy.get("#add-todo-button").should("exist");
+		cy.get('input[placeholder="Add a new todo..."]').should("exist");
+		cy.contains("button", "Add").should("exist");
 	});
 
 	it("should show empty state message when no todos exist", () => {
 		// Delete any existing todos first
-		cy.get("body").then(($body) => {
-			if ($body.find("#todo-list li").length) {
-				cy.get("#todo-list li").each(($el) => {
-					cy.wrap($el)
-						.invoke("attr", "id")
-						.then((todoId) => {
-							if (!todoId) throw new Error("Todo ID not found");
-							const id = todoId.split("-").pop();
-							if (!id) throw new Error("Todo ID not found");
-
-							cy.get(`#delete-todo-${id}`).click();
-						});
-				});
-			}
+		cy.get("li").each(($todo) => {
+			// Find and click delete button within each todo item
+			cy.wrap($todo).within(() => {
+				cy.contains("button", "Delete").click();
+			});
+			// Verify this todo is removed before moving to next
+			cy.wrap($todo).should("not.exist");
 		});
 
 		// Now verify empty state
-		cy.get("#empty-message").should("be.visible");
-		cy.get("#empty-message").should("contain", "No todos yet. Add one above!");
+		cy.contains("No todos yet. Add one above!").should("be.visible");
 	});
 
 	it("should add a new todo", () => {
 		const todoText = createUniqueTodo("Buy groceries");
-		cy.get("#todo-input").type(todoText);
-		cy.get("#add-todo-button").click();
 
-		cy.contains("#todo-list li", todoText)
-			.invoke("attr", "id")
-			.then((todoId) => {
-				if (!todoId) throw new Error("Todo ID not found");
-				const id = todoId.split("-").pop();
-				if (!id) throw new Error("Todo ID not found");
+		cy.get('input[placeholder="Add a new todo..."]').type(todoText);
+		cy.contains("button", "Add").click();
 
-				cy.get(`#${todoId}`).find(`#todo-text-${id}`).should("contain", todoText);
-			});
+		// Verify the todo is displayed
+		cy.contains("li", todoText).should("be.visible");
 	});
 
 	it("should toggle todo completion status", () => {
 		const todoText = createUniqueTodo("Test toggle functionality");
-		cy.get("#todo-input").type(todoText);
-		cy.get("#add-todo-button").click();
+		cy.get('input[placeholder="Add a new todo..."]').type(todoText);
+		cy.contains("button", "Add").click();
 
-		cy.contains("#todo-list li", todoText)
-			.invoke("attr", "id")
-			.then((todoId) => {
-				if (!todoId) throw new Error("Todo ID not found");
-				const id = todoId.split("-").pop();
-				if (!id) throw new Error("Todo ID not found");
+		// Find the todo item and toggle it
+		cy.contains("li", todoText).within(() => {
+			// Create alias for the toggle button
+			cy.get(`[aria-label="Toggle todo: ${todoText}"]`).as("toggleButton");
 
-				const toggleButton = `#toggle-todo-${id}`;
-				const todoText = `#todo-text-${id}`;
+			// Initial state
+			cy.get("@toggleButton").should("have.attr", "aria-pressed", "false");
 
-				// Toggle on
-				cy.get(toggleButton).click();
-				cy.get(todoText).should("have.class", "line-through");
+			// Toggle on
+			cy.get("@toggleButton").click();
+			cy.get("@toggleButton").should("have.attr", "aria-pressed", "true");
+			cy.contains(todoText).should("have.class", "line-through");
 
-				// Toggle off
-				cy.get(toggleButton).click();
-				cy.get(todoText).should("not.have.class", "line-through");
-			});
+			// Toggle off
+			cy.get("@toggleButton").click();
+			cy.get("@toggleButton").should("have.attr", "aria-pressed", "false");
+			cy.contains(todoText).should("not.have.class", "line-through");
+		});
 	});
 
 	it("should delete a todo", () => {
 		const todoText = createUniqueTodo("Delete me");
-		cy.get("#todo-input").type(todoText);
-		cy.get("#add-todo-button").click();
 
-		cy.contains("#todo-list li", todoText)
-			.invoke("attr", "id")
-			.then((todoId) => {
-				if (!todoId) throw new Error("Todo ID not found");
-				const id = todoId.split("-").pop();
-				if (!id) throw new Error("Todo ID not found");
+		cy.get('input[placeholder="Add a new todo..."]').type(todoText);
+		cy.contains("button", "Add").click();
 
-				// Delete using the specific delete button
-				cy.get(`#delete-todo-${id}`).click();
+		// Verify todo is added before proceeding
+		cy.contains("li", todoText).should("be.visible");
 
-				// Verify todo is removed
-				cy.get(`#${todoId}`).should("not.exist");
-			});
+		// Delete the todo
+		cy.contains("li", todoText).within(() => {
+			cy.contains("button", "Delete").click();
+		});
+
+		// Verify todo is removed
+		cy.contains("li", todoText).should("not.exist");
 	});
 
 	it("should not add empty todos", () => {
 		// Get initial count of todos
 		cy.get("body").then(($body) => {
-			const initialCount = $body.find("#todo-list li").length;
+			const initialCount = $body.find("li").length;
 
-			cy.get("#todo-input").type(" ");
-			cy.get("#add-todo-button").click();
+			cy.get('input[placeholder="Add a new todo..."]').type(" ");
+			cy.contains("button", "Add").click();
 
 			// Verify count remains the same
-			cy.get("#todo-list li").should("have.length", initialCount);
+			cy.get("li").should("have.length", initialCount);
 		});
 	});
 
 	it("should handle multiple todos", () => {
-		const baseTodos = ["First todo", "Second todo", "Third todo"];
-		const todos = baseTodos.map((text) => createUniqueTodo(text));
-		const todoIds: string[] = [];
+		const todos = ["First todo", "Second todo", "Third todo"].map((text) => createUniqueTodo(text));
 
 		// Get initial count of todos
 		cy.get("body").then(($body) => {
-			const initialCount = $body.find("#todo-list li").length;
+			const initialCount = $body.find("li").length;
 
-			// Add multiple todos and store their IDs
+			// Add multiple todos
 			for (const todo of todos) {
-				cy.get("#todo-input").type(todo);
-				cy.get("#add-todo-button").click();
-
-				cy.contains("#todo-list li", todo)
-					.invoke("attr", "id")
-					.then((todoId) => {
-						if (!todoId) throw new Error("Todo ID not found");
-						const id = todoId.split("-").pop();
-						if (!id) throw new Error("Todo ID not found");
-
-						todoIds.push(id);
-					});
+				cy.get('input[placeholder="Add a new todo..."]').type(todo);
+				cy.contains("button", "Add").click();
+				cy.contains("li", todo).should("be.visible");
 			}
 
-			// Verify all todos exist using their specific IDs
-			cy.get("#todo-list li").should("have.length", initialCount + todos.length);
-			cy.wrap(todoIds).each((id, index) => {
-				cy.get(`#todo-text-${id}`).should("contain", todos[index]);
-			});
+			// Verify all todos exist
+			cy.get("li").should("have.length", initialCount + todos.length);
+			for (const todo of todos) {
+				cy.contains("li", todo).should("be.visible");
+			}
 		});
 	});
 });
